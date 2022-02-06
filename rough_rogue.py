@@ -265,7 +265,7 @@ class screen():
         where_am_i = pick_random_room(rms)
         i = 0
         while i<(len(self.area)):
-            self.area[i] = tmp_dungeon[self.hero.dy+i+self.width][self.hero.dx+self.width:self.hero.dx+self.width+self.width]
+            self.area[i] = tmp_dungeon[self.hero.dy+i+self.hy+1][self.hero.dx+(self.width-self.hy):self.hero.dx+self.width+(self.width-self.hy)]
             i = i+1
         self.area[self.hy][self.hx] = self.hero.chr # y,x
         for line in self.area:

@@ -19,8 +19,11 @@ my_dungeon.new()
 
 # spawn player at random position
 start_pos = rough_rogue.random_spawn(dungeon=my_dungeon.dungeon, floor_tile='.')
-steve.dx = start_pos[0] - my_screen.hx
-steve.dy = start_pos[1] - my_screen.hy
+steve.dx = start_pos[0]
+steve.dy = start_pos[1]
+
+
+my_dungeon.dungeon[steve.dy][steve.dx] = 'X'
 
 while True:
     my_screen.test_draw(rms=my_dungeon.rooms_list, dungeon=my_dungeon.dungeon)
