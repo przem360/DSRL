@@ -265,35 +265,42 @@ class screen():
         where_am_i = pick_random_room(rms)
         i = 0
         while i<(len(self.area)):
-            self.area[i] = tmp_dungeon[self.hero.dy+i+self.hy+1][self.hero.dx+(self.width-self.hy):self.hero.dx+self.width+(self.width-self.hy)]
+            y_coord = self.hero.dy+i+self.hy+1
+            x_coord_start = self.hero.dx+(self.width-self.hy)
+            x_coord_stop = self.hero.dx+self.width+(self.width-self.hy)
+            self.area[i] = tmp_dungeon[y_coord][x_coord_start:x_coord_stop]
             i = i+1
+        # self.win.addstr('MD: '+self.hero.move_direction+' LT: '+self.area[self.hy][self.hx-1]+' | '+self.ground)
         self.area[self.hy][self.hx] = self.hero.chr # y,x
         for line in self.area:
             area_string = area_string + ''.join(line) + '\n'
-        self.area = []
-        print('How big is area_string: '+str(len(self.area)))
-        print('self.height: '+str(area_string))
+        # self.area = []
         self.win.addstr(area_string)
     def static_draw(self,rms,dungeon):
         pass
 class creature():
-    def __init__(self, chr, x_pos, y_pos, hp=100) -> None:
+    def __init__(self, chr, x_pos, y_pos, move_direction='',hp=100) -> None:
         self.x = x_pos
         self.y = y_pos
         # mx and my positions for placing creatures in dungeon
         self.dx = 0
         self.dy = 0
+        self.move_direction = move_direction
         self.chr = chr
     def move (self,direction):
         if direction == 'left':
             self.x = self.x - 1
             self.dx = self.dx - 1
+            self.move_direction = 'left'
         if direction == 'right':
             self.x = self.x + 1
             self.dx = self.dx + 1
+            self.move_direction = 'right'
         if direction == 'up':
             self.y = self.y - 1
             self.dy = self.dy - 1
+            self.move_direction = 'up'
         if direction == 'down':
             self.y = self.y + 1
             self.dy = self.dy + 1
+            self.move_direction = 'down'

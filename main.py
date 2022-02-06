@@ -30,9 +30,17 @@ while True:
     my_screen.win.refresh()
     cmd = my_screen.win.getch()
     if cmd == ord('q'): break
-    elif cmd == curses.KEY_LEFT: steve.move('left')
-    elif cmd == curses.KEY_RIGHT: steve.move('right')
-    elif cmd == curses.KEY_UP: steve.move('up')
-    elif cmd == curses.KEY_DOWN: steve.move('down')
+    elif cmd == curses.KEY_LEFT:
+        if my_screen.area[my_screen.hy][my_screen.hx-1]=='.':
+            steve.move('left')
+    elif cmd == curses.KEY_RIGHT:
+        if my_screen.area[my_screen.hy][my_screen.hx+1]=='.':
+            steve.move('right')
+    elif cmd == curses.KEY_UP:
+        if my_screen.area[my_screen.hy-1][my_screen.hx]=='.':
+            steve.move('up')
+    elif cmd == curses.KEY_DOWN:
+        if my_screen.area[my_screen.hy+1][my_screen.hx]=='.':
+            steve.move('down')
 curses.endwin()
 print('BYE!')
