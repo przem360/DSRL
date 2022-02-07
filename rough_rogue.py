@@ -276,8 +276,17 @@ class screen():
             area_string = area_string + ''.join(line) + '\n'
         # self.area = []
         self.win.addstr(area_string)
+
     def static_draw(self,rms,dungeon):
-        pass
+        self.win.clear()
+        self.my_screen = []
+        area_string = ''
+        self.area = list(map(list, dungeon))
+        self.area[self.hero.dy][self.hero.dx] = self.hero.chr
+        for line in self.area:
+            area_string = area_string + ''.join(line) + '\n'
+        self.win.addstr(area_string)
+
 class creature():
     def __init__(self, chr, x_pos, y_pos, move_direction='',hp=100) -> None:
         self.x = x_pos

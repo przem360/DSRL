@@ -1,0 +1,5 @@
+{"monsters":[
+    { "type":"Zombie", "letter":"z", "hp":1, "attack":1, "deffence":1, "count":10 },
+    { "type":"Naga", "letter":"N", "hp":5, "attack":2, "deffence":2, "count":5 },
+    { "type":"Giant Spider", "letter":"S", "hp":10, "attack":8, "deffence":4, "count":1 }
+]}
