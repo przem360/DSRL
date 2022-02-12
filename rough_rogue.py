@@ -1,5 +1,7 @@
 import curses
 import random
+import json
+
 
 from numpy import empty, empty_like
 
@@ -16,6 +18,41 @@ def random_spawn(dungeon, floor_tile):
         rx = random.randint(0,len(dungeon[0])-1)
         ry = random.randint(0,len(dungeon)-1)
     return [rx,ry]
+
+# ===================== PATHFINER =====================
+
+def get_nearest_spaces(dungeon, wall, space, visited):
+    spaces = []
+    spaces.append((space[0]-1, space[1]))  # Up
+    spaces.append((space[0]+1, space[1]))  # Down
+    spaces.append((space[0], space[1]-1))  # Left
+    spaces.append((space[0], space[1]+1))  # Right
+    final = []
+    for i in spaces:
+        if (dungeon[i[0]][i[1]] != wall) and (i not in visited):
+            final.append(i)
+    return final
+
+def find_path(dungeon, wall, start, end):
+    queue = [start]
+    visited = set()
+    while len(queue) != 0:
+        if queue[0] == start:
+            path = [queue.pop(0)] 
+        else:
+            path = queue.pop(0)
+        front = path[-1]
+        if front == end:
+            return path
+        elif front not in visited:
+            for adjacentSpace in get_nearest_spaces(dungeon, wall, front, visited):
+                newPath = list(path)
+                newPath.append(adjacentSpace)
+                queue.append(newPath)
+            visited.add(front)
+    return None
+
+# ===================== DUNGEON GENERATOR =====================
 
 class dungeon():
     def __init__(self,width=64,height=64,min_room_size=5,ch_bck=' ',ch_floor='.',ch_wall='#', blocks=3,horisontal_corridors=3):
@@ -189,6 +226,7 @@ class dungeon():
             self.draw_on_map(b)
         self.add_walls()
 
+# ===================== DRAWING ON THE SCREEN =====================
 
 class screen():
     def __init__(self,width,height,ground,hero=None,bck='',hx=7,hy=7):
@@ -257,9 +295,12 @@ class screen():
             tmp_dungeon.append(vertical_line)
         return tmp_dungeon
 
-    def test_draw(self,rms,dungeon):
+    def viewport_draw(self,rms,dungeon,monsters=[]):
         self.area = [None]*self.height  
         tmp_dungeon = self.expand_dungeon(dungeon=dungeon,top_margin=self.height,bottom_margin=self.height,side_margin=self.width,expand_character=' ')
+        if len(monsters)>0:
+            for monster in monsters:
+                tmp_dungeon[monster['pos_y']+self.height][monster['pos_x']+self.width] = monster['letter']
         area_string = ''
         self.win.clear()
         where_am_i = pick_random_room(rms)
@@ -277,12 +318,15 @@ class screen():
         # self.area = []
         self.win.addstr(area_string)
 
-    def static_draw(self,rms,dungeon):
+    def static_draw(self,rms,dungeon,monsters=[]):
         self.win.clear()
         self.my_screen = []
         area_string = ''
         self.area = list(map(list, dungeon))
         self.area[self.hero.dy][self.hero.dx] = self.hero.chr
+        if len(monsters)>0:
+            for monster in monsters:
+                self.area[monster['pos_y']][monster['pos_x']] = monster['letter']
         for line in self.area:
             area_string = area_string + ''.join(line) + '\n'
         self.win.addstr(area_string)
@@ -313,3 +357,33 @@ class creature():
             self.y = self.y + 1
             self.dy = self.dy + 1
             self.move_direction = 'down'
+
+class monster():
+    def __init__(self,dungeon,floor_tile,wall_tile) -> None:
+        self.all_monsters = []
+        self.dungeon = dungeon
+        self.floor_tile = floor_tile
+        self.wall_tile = wall_tile
+        file = open('dungeon_content.json','r')
+        dungeon_content = json.load(file)
+        dungeon_content = dungeon_content['monsters']
+        self.rand_pos = []
+        for monster in dungeon_content:
+            self.rand_pos = random_spawn(self.dungeon,self.floor_tile)
+            keys = monster.keys() # for now dk if I want to respect keys provided in file or expect one standard
+            vals = monster.values()
+            self.all_monsters.append({'type':list(vals)[0],'letter':list(vals)[1],'hp':list(vals)[2],'attack':list(vals)[3],'deffence':list(vals)[4],'count':list(vals)[5],'pos_x':self.rand_pos[0],'pos_y':self.rand_pos[1]})
+        # print(str(self.all_monsters))
+    def populate(self):
+        for monster in self.all_monsters:
+            self.dungeon[monster['pos_y']][monster['pos_x']] = monster['letter']
+    def set_target_for_single_monster(self,monster):
+        monster['target'] = random_spawn(self.dungeon,self.floor_tile)
+        monster['path'] = find_path(self.dungeon,self.wall_tile,tuple([monster['pos_y'],monster['pos_x']]),tuple([monster['target'][1],monster['target'][0]]))
+    def set_targets(self):
+        i = 0
+        while i<len(self.all_monsters):
+            self.all_monsters[i]['target'] = random_spawn(self.dungeon,self.floor_tile)
+            target = tuple([self.all_monsters[i]['target'][1],self.all_monsters[i]['target'][0]])
+            self.all_monsters[i]['path'] = find_path(self.dungeon,self.wall_tile,tuple([self.all_monsters[i]['pos_y'],self.all_monsters[i]['pos_x']]),target)
+            i = i+1

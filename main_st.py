@@ -24,11 +24,15 @@ steve.dx = start_pos[0]
 steve.dy = start_pos[1]
 
 
-my_dungeon.dungeon[steve.dy][steve.dx] = 'X'
+# my_dungeon.dungeon[steve.dy][steve.dx] = 'X'
+my_monsters = rough_rogue.monster(dungeon=my_dungeon.dungeon,floor_tile='.',wall_tile='#')
+# my_monsters.populate()
+my_monsters.set_targets()
+
 
 while True:
     # my_screen.test_draw(rms=my_dungeon.rooms_list, dungeon=my_dungeon.dungeon)
-    my_screen.static_draw(rms=my_dungeon.rooms_list, dungeon=my_dungeon.dungeon)
+    my_screen.static_draw(rms=my_dungeon.rooms_list, dungeon=my_dungeon.dungeon,monsters=my_monsters.all_monsters)
     my_screen.win.refresh()
     cmd = my_screen.win.getch()
     if cmd == ord('q'): break
@@ -44,5 +48,17 @@ while True:
     elif cmd == curses.KEY_DOWN:
         if my_screen.area[steve.dy+1][steve.dx]=='.':
             steve.move('down')
+    # make monsters walking
+    for monster in my_monsters.all_monsters:
+        if len(monster['path'])>0:
+            next_field = monster['path'][0]
+            monster['pos_y'] = next_field[0]
+            monster['pos_x'] = next_field[1]
+            next_field = []
+            monster['path'].pop(0)
+        else:
+            my_monsters.set_target_for_single_monster(monster)
+    # my_monsters.populate()
 curses.endwin()
+print(my_monsters.all_monsters)
 print('BYE!')
